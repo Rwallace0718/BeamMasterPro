@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { LaserType, LaserConfig, JobSettings, Project, CalculationResult, CloudConfig } from './types';
 import { calculateLaserSettings } from './services/geminiService';
@@ -11,7 +10,6 @@ import HistoryList from './components/HistoryList';
 import HomeView from './components/HomeView';
 import EconomicsCalculator from './components/EconomicsCalculator';
 import SettingsView from './components/SettingsView';
-import SplashScreen from './components/SplashScreen';
 
 export type AppView = 'home' | 'calculator' | 'economics' | 'history' | 'settings';
 
@@ -105,8 +103,6 @@ const App: React.FC = () => {
 
   return (
     <div className="flex flex-col md:flex-row min-h-screen w-full bg-slate-950 text-slate-100">
-      <SplashScreen />
-      
       <Sidebar activeTab={activeTab} onTabChange={setActiveTab} />
       
       <main className="flex-grow flex flex-col p-4 md:p-12 pb-32 md:pb-12 bg-slate-950 overflow-x-hidden">

@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { createRoot } from 'react-dom/client';
 import App from './App';
@@ -16,10 +15,10 @@ const log = (msg: string) => {
 };
 
 const mountApp = () => {
-  log("Mounting process starting...");
+  log("Initializing React application...");
   const container = document.getElementById('root');
   if (!container) {
-    log("CRITICAL: Root container not found in DOM");
+    log("CRITICAL: DOM Root (#root) missing.");
     return;
   }
 
@@ -30,26 +29,34 @@ const mountApp = () => {
         <App />
       </React.StrictMode>
     );
-    log("App successfully rendered to root.");
+    log("Mounting complete.");
     
-    // Hide the loader
-    setTimeout(() => {
+    // Deactivate loading screen
+    const hideLoader = () => {
       const loader = document.getElementById('loading-screen');
       if (loader) {
         loader.classList.add('hidden');
-        log("Loading screen dismissed.");
+        log("Loading screen cleared.");
       }
-    }, 100);
+    };
+
+    // Use multiple triggers to ensure the screen is hidden
+    if (document.readyState === 'complete') {
+        hideLoader();
+    } else {
+        window.addEventListener('load', hideLoader);
+        setTimeout(hideLoader, 500); // Fallback for fast renders
+    }
 
   } catch (error: any) {
-    log(`Mounting failed: ${error.message}`);
-    console.error("Mounting failed:", error);
+    log(`FATAL: React mount failed: ${error.message}`);
+    console.error("Mounting error:", error);
   }
 };
 
-// Check ready state to mount
-if (document.readyState === 'complete' || document.readyState === 'interactive') {
-  mountApp();
+// Start mounting immediately or on interactive
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', mountApp);
 } else {
-  document.addEventListener('DOMContentLoaded', mountApp);
+    mountApp();
 }
