@@ -1,0 +1,25 @@
+
+{
+  "short_name": "BeamMaster",
+  "name": "BeamMaster Pro: Laser Companion",
+  "description": "Professional laser engraving settings and cost calculator.",
+  "icons": [
+    {
+      "src": "https://cdn-icons-png.flaticon.com/512/6569/6569255.png",
+      "type": "image/png",
+      "sizes": "192x192",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "https://cdn-icons-png.flaticon.com/512/6569/6569255.png",
+      "type": "image/png",
+      "sizes": "512x512",
+      "purpose": "any maskable"
+    }
+  ],
+  "start_url": ".",
+  "display": "standalone",
+  "orientation": "portrait",
+  "theme_color": "#0f172a",
+  "background_color": "#0f172a"
+}

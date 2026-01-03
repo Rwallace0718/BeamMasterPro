@@ -1,0 +1,7 @@
+{
+  "name": "BeamMaster Pro: Laser Engraving Companion",
+  "description": "A sophisticated tool for laser engraving enthusiasts and professionals to calculate optimal power, speed, and time settings based on material and hardware specifications.",
+  "requestFramePermissions": [
+    "camera"
+  ]
+}
