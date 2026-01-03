@@ -3,20 +3,25 @@ import React from 'react';
 import { createRoot } from 'react-dom/client';
 import App from './App';
 
-const init = () => {
+const mountApp = () => {
   const container = document.getElementById('root');
-  if (container) {
+  if (!container) return;
+
+  try {
     const root = createRoot(container);
     root.render(
       <React.StrictMode>
         <App />
       </React.StrictMode>
     );
+    // Loading screen is inside #root, so React will replace it automatically.
+  } catch (error) {
+    console.error("Mounting failed:", error);
   }
 };
 
 if (document.readyState === 'complete' || document.readyState === 'interactive') {
-  init();
+  mountApp();
 } else {
-  document.addEventListener('DOMContentLoaded', init);
+  document.addEventListener('DOMContentLoaded', mountApp);
 }
