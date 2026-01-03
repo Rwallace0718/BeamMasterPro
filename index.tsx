@@ -3,9 +3,10 @@ import React from 'react';
 import { createRoot } from 'react-dom/client';
 import App from './App';
 
-const container = document.getElementById('root');
+const mountApp = () => {
+  const container = document.getElementById('root');
+  if (!container) return;
 
-if (container) {
   try {
     const root = createRoot(container);
     root.render(
@@ -14,13 +15,18 @@ if (container) {
       </React.StrictMode>
     );
   } catch (err) {
+    console.error("Mounting failed:", err);
     const errorDisplay = document.getElementById('error-display');
     if (errorDisplay) {
       errorDisplay.style.display = 'block';
-      errorDisplay.innerHTML = 'Mount Error: ' + err.message;
+      errorDisplay.innerHTML = '<strong>Mount Error:</strong> ' + (err instanceof Error ? err.message : String(err));
     }
-    console.error("Mounting failed:", err);
   }
+};
+
+// Ensure DOM is ready before mounting
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', mountApp);
 } else {
-  console.error("Root container not found");
+  mountApp();
 }
