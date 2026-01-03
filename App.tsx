@@ -15,6 +15,13 @@ import SplashScreen from './components/SplashScreen';
 
 export type AppView = 'home' | 'calculator' | 'economics' | 'history' | 'settings';
 
+const generateUUID = () => {
+  if (typeof crypto !== 'undefined' && crypto.randomUUID) {
+    return crypto.randomUUID();
+  }
+  return Math.random().toString(36).substring(2, 15);
+};
+
 const App: React.FC = () => {
   const [activeTab, setActiveTab] = useState<AppView>('home');
   const [laserConfig, setLaserConfig] = useState<LaserConfig>({
@@ -31,7 +38,7 @@ const App: React.FC = () => {
     material: 'Plywood',
     thickness: 3,
     operation: 'cut',
-    materialItems: [{ id: '1', name: 'Base Material', cost: 0 }],
+    materialItems: [{ id: generateUUID(), name: 'Base Material', cost: 0 }],
     hourlyRate: 50
   });
   const [loading, setLoading] = useState(false);
@@ -60,10 +67,6 @@ const App: React.FC = () => {
     if (savedJob) setJobSettings(JSON.parse(savedJob));
   }, []);
 
-  useEffect(() => {
-    localStorage.setItem('beammaster_job_settings', JSON.stringify(jobSettings));
-  }, [jobSettings]);
-
   const handleCalculate = async () => {
     setLoading(true);
     try {
@@ -74,16 +77,11 @@ const App: React.FC = () => {
       const machineTotal = (minutes / 60) * (jobSettings.hourlyRate || 0);
       const totalCost = machineTotal + materialTotal;
       
-      const enrichedResult = {
-        ...calcResult,
-        totalCost,
-        suggestedPrice: totalCost * 2.5 
-      };
-
+      const enrichedResult = { ...calcResult, totalCost, suggestedPrice: totalCost * 2.5 };
       setResult(enrichedResult);
       
       const newProject: Project = {
-        id: crypto.randomUUID(),
+        id: generateUUID(),
         date: new Date().toISOString(),
         ...jobSettings,
         laserConfig,
@@ -92,8 +90,8 @@ const App: React.FC = () => {
       const updatedProjects = [newProject, ...projects];
       setProjects(updatedProjects);
       localStorage.setItem('beammaster_projects', JSON.stringify(updatedProjects));
-    } catch (error) {
-      alert("Failed to calculate settings.");
+    } catch (error: any) {
+      alert(error.message || "Failed to calculate settings.");
     } finally {
       setLoading(false);
     }
@@ -105,32 +103,27 @@ const App: React.FC = () => {
     localStorage.setItem('beammaster_projects', JSON.stringify(updated));
   };
 
-  const saveCloudConfig = (config: CloudConfig) => {
-    setCloudConfig(config);
-    localStorage.setItem('beammaster_cloud_config', JSON.stringify(config));
-  };
-
   return (
-    <div className="flex flex-col md:flex-row h-screen w-full bg-slate-950 text-slate-100 font-sans overflow-hidden">
+    <div className="flex flex-col md:flex-row min-h-screen w-full bg-slate-950 text-slate-100">
       <SplashScreen />
       
       <Sidebar activeTab={activeTab} onTabChange={setActiveTab} />
       
-      <main className="flex-1 overflow-y-auto overflow-x-hidden p-6 md:p-12 pb-24 md:pb-12 bg-slate-950">
-        <div className="max-w-[1200px] mx-auto w-full min-h-full flex flex-col">
+      <main className="flex-grow flex flex-col p-4 md:p-12 pb-32 md:pb-12 bg-slate-950 overflow-x-hidden">
+        <div className="max-w-[1200px] mx-auto w-full flex-grow flex flex-col">
           {activeTab !== 'home' && (
             <Header title={
               activeTab === 'calculator' ? 'Project Setup' : 
-              activeTab === 'economics' ? 'Price Calculator' : 
-              activeTab === 'history' ? 'Project History' : 'Settings'
+              activeTab === 'economics' ? 'Pricing Tools' : 
+              activeTab === 'history' ? 'History' : 'Settings'
             } />
           )}
           
-          <div className="flex-1">
+          <div className="flex-grow">
             {activeTab === 'home' && <HomeView onNavigate={setActiveTab} />}
 
             {activeTab === 'calculator' && (
-              <div className="grid grid-cols-1 xl:grid-cols-2 gap-8 animate-in fade-in slide-in-from-bottom-2 duration-300">
+              <div className="grid grid-cols-1 xl:grid-cols-2 gap-8 animate-in fade-in duration-300">
                 <div className="space-y-8">
                   <ConfigPanel config={laserConfig} onChange={setLaserConfig} />
                   <JobPanel settings={jobSettings} onChange={setJobSettings} onCalculate={handleCalculate} loading={loading} />
@@ -142,29 +135,18 @@ const App: React.FC = () => {
             )}
 
             {activeTab === 'economics' && (
-              <div className="animate-in fade-in slide-in-from-bottom-2 duration-300">
-                <EconomicsCalculator 
-                  settings={jobSettings} 
-                  onChange={setJobSettings} 
-                  projects={projects} 
-                  cloudConfig={cloudConfig}
-                  currentResult={result}
-                  onNavigate={setActiveTab}
-                />
-              </div>
+              <EconomicsCalculator 
+                settings={jobSettings} 
+                onChange={setJobSettings} 
+                projects={projects} 
+                cloudConfig={cloudConfig}
+                currentResult={result}
+                onNavigate={setActiveTab}
+              />
             )}
 
-            {activeTab === 'history' && (
-              <div className="animate-in fade-in slide-in-from-bottom-2 duration-300">
-                <HistoryList projects={projects} onDelete={deleteProject} />
-              </div>
-            )}
-
-            {activeTab === 'settings' && (
-              <div className="animate-in fade-in slide-in-from-bottom-2 duration-300">
-                <SettingsView config={cloudConfig} onSave={saveCloudConfig} />
-              </div>
-            )}
+            {activeTab === 'history' && <HistoryList projects={projects} onDelete={deleteProject} />}
+            {activeTab === 'settings' && <SettingsView config={cloudConfig} onSave={setCloudConfig} />}
           </div>
         </div>
       </main>
