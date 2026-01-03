@@ -25,23 +25,38 @@
             --safe-top: env(safe-area-inset-top);
             --safe-bottom: env(safe-area-inset-bottom);
         }
-        body {
-            font-family: 'Inter', sans-serif;
+        * {
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+        html, body {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            width: 100%;
             background-color: #0f172a;
             color: #f8fafc;
-            /* Prevents the 'pull-to-refresh' gesture in mobile browsers */
-            overscroll-behavior-y: none;
-            /* Support for iOS Notch/Home Indicator */
-            padding: var(--safe-top) env(safe-area-inset-right) var(--safe-bottom) env(safe-area-inset-left);
-            min-height: 100vh;
+            overflow: hidden; /* Prevent body scroll, handled by main container */
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+            display: flex;
+            flex-direction: column;
+        }
+        #root {
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+            height: 100%;
+            width: 100%;
         }
         .mono {
-            font-family: 'JetBrains+Mono', monospace;
+            font-family: 'JetBrains Mono', monospace;
         }
         button {
             touch-action: manipulation;
         }
-        /* Custom Scrollbar for a more app-like feel */
+        /* Custom Scrollbar */
         ::-webkit-scrollbar {
             width: 6px;
         }
@@ -54,7 +69,7 @@
         }
         /* Active touch feedback for mobile */
         button:active {
-            opacity: 0.7;
+            opacity: 0.8;
             transform: scale(0.98);
         }
     </style>

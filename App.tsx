@@ -39,18 +39,25 @@ const App: React.FC = () => {
   const [projects, setProjects] = useState<Project[]>([]);
 
   useEffect(() => {
+    try {
+      const params = new URLSearchParams(window.location.search);
+      const tabParam = params.get('tab') as AppView;
+      const validTabs: AppView[] = ['home', 'calculator', 'economics', 'history', 'settings'];
+      if (tabParam && validTabs.includes(tabParam)) {
+        setActiveTab(tabParam);
+      }
+    } catch (e) {
+      setActiveTab('home');
+    }
+  }, []);
+
+  useEffect(() => {
     const savedProjects = localStorage.getItem('beammaster_projects');
-    if (savedProjects) {
-      setProjects(JSON.parse(savedProjects));
-    }
+    if (savedProjects) setProjects(JSON.parse(savedProjects));
     const savedCloud = localStorage.getItem('beammaster_cloud_config');
-    if (savedCloud) {
-      setCloudConfig(JSON.parse(savedCloud));
-    }
+    if (savedCloud) setCloudConfig(JSON.parse(savedCloud));
     const savedJob = localStorage.getItem('beammaster_job_settings');
-    if (savedJob) {
-      setJobSettings(JSON.parse(savedJob));
-    }
+    if (savedJob) setJobSettings(JSON.parse(savedJob));
   }, []);
 
   useEffect(() => {
@@ -61,10 +68,8 @@ const App: React.FC = () => {
     setLoading(true);
     try {
       const calcResult = await calculateLaserSettings(laserConfig, jobSettings);
-      
       const timeMatch = calcResult.estimatedTime.match(/(\d+)m/);
       const minutes = timeMatch ? parseInt(timeMatch[1]) : 5;
-      
       const materialTotal = jobSettings.materialItems.reduce((acc, item) => acc + item.cost, 0);
       const machineTotal = (minutes / 60) * (jobSettings.hourlyRate || 0);
       const totalCost = machineTotal + materialTotal;
@@ -88,7 +93,6 @@ const App: React.FC = () => {
       setProjects(updatedProjects);
       localStorage.setItem('beammaster_projects', JSON.stringify(updatedProjects));
     } catch (error) {
-      console.error("Calculation failed", error);
       alert("Failed to calculate settings.");
     } finally {
       setLoading(false);
@@ -107,56 +111,62 @@ const App: React.FC = () => {
   };
 
   return (
-    <div className="flex min-h-screen bg-slate-950 text-slate-100 font-sans">
+    <div className="flex flex-col md:flex-row h-screen w-full bg-slate-950 text-slate-100 font-sans overflow-hidden">
       <SplashScreen />
       
       <Sidebar activeTab={activeTab} onTabChange={setActiveTab} />
       
-      <main className="flex-1 overflow-y-auto p-4 md:p-8">
-        {activeTab !== 'home' && <Header />}
-        
-        {activeTab === 'home' && (
-          <HomeView onNavigate={setActiveTab} />
-        )}
+      <main className="flex-1 overflow-y-auto overflow-x-hidden p-6 md:p-12 pb-24 md:pb-12 bg-slate-950">
+        <div className="max-w-[1200px] mx-auto w-full min-h-full flex flex-col">
+          {activeTab !== 'home' && (
+            <Header title={
+              activeTab === 'calculator' ? 'Project Setup' : 
+              activeTab === 'economics' ? 'Price Calculator' : 
+              activeTab === 'history' ? 'Project History' : 'Settings'
+            } />
+          )}
+          
+          <div className="flex-1">
+            {activeTab === 'home' && <HomeView onNavigate={setActiveTab} />}
 
-        {activeTab === 'calculator' && (
-          <div className="max-w-6xl mx-auto space-y-8 animate-in fade-in duration-500">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-              <div className="space-y-8">
-                <ConfigPanel config={laserConfig} onChange={setLaserConfig} />
-                <JobPanel settings={jobSettings} onChange={setJobSettings} onCalculate={handleCalculate} loading={loading} />
+            {activeTab === 'calculator' && (
+              <div className="grid grid-cols-1 xl:grid-cols-2 gap-8 animate-in fade-in slide-in-from-bottom-2 duration-300">
+                <div className="space-y-8">
+                  <ConfigPanel config={laserConfig} onChange={setLaserConfig} />
+                  <JobPanel settings={jobSettings} onChange={setJobSettings} onCalculate={handleCalculate} loading={loading} />
+                </div>
+                <div className="relative">
+                  <ResultsDisplay result={result} loading={loading} job={jobSettings} />
+                </div>
               </div>
-              <div className="sticky top-8">
-                <ResultsDisplay result={result} loading={loading} job={jobSettings} />
+            )}
+
+            {activeTab === 'economics' && (
+              <div className="animate-in fade-in slide-in-from-bottom-2 duration-300">
+                <EconomicsCalculator 
+                  settings={jobSettings} 
+                  onChange={setJobSettings} 
+                  projects={projects} 
+                  cloudConfig={cloudConfig}
+                  currentResult={result}
+                  onNavigate={setActiveTab}
+                />
               </div>
-            </div>
-          </div>
-        )}
+            )}
 
-        {activeTab === 'economics' && (
-          <div className="max-w-4xl mx-auto animate-in fade-in duration-500">
-            <EconomicsCalculator 
-              settings={jobSettings} 
-              onChange={setJobSettings} 
-              projects={projects} 
-              cloudConfig={cloudConfig}
-              currentResult={result}
-              onNavigate={setActiveTab}
-            />
-          </div>
-        )}
+            {activeTab === 'history' && (
+              <div className="animate-in fade-in slide-in-from-bottom-2 duration-300">
+                <HistoryList projects={projects} onDelete={deleteProject} />
+              </div>
+            )}
 
-        {activeTab === 'history' && (
-          <div className="max-w-4xl mx-auto animate-in fade-in duration-500">
-            <HistoryList projects={projects} onDelete={deleteProject} />
+            {activeTab === 'settings' && (
+              <div className="animate-in fade-in slide-in-from-bottom-2 duration-300">
+                <SettingsView config={cloudConfig} onSave={saveCloudConfig} />
+              </div>
+            )}
           </div>
-        )}
-
-        {activeTab === 'settings' && (
-          <div className="max-w-4xl mx-auto animate-in fade-in duration-500">
-            <SettingsView config={cloudConfig} onSave={saveCloudConfig} />
-          </div>
-        )}
+        </div>
       </main>
     </div>
   );

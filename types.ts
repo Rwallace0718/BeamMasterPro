@@ -15,6 +15,8 @@ export interface LaserConfig {
 export interface CloudConfig {
   googleSheetsApiKey: string;
   spreadsheetId: string;
+  githubToken?: string;
+  githubRepo?: string; // format: 'username/repo'
 }
 
 export interface MaterialItem {
