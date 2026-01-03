@@ -4,64 +4,51 @@ import App from './App';
 
 const log = (msg: string) => {
   const time = new Date().toLocaleTimeString();
+  const entry = `[${time}] [Module] ${msg}`;
   if ((window as any).diagLogs) {
-    (window as any).diagLogs.push(`[${time}] [React] ${msg}`);
+    (window as any).diagLogs.push(entry);
     const el = document.getElementById('diag-content');
     if (el) {
       el.innerText = (window as any).diagLogs.join('\n');
       el.scrollTop = el.scrollHeight;
     }
   }
-  console.log(`[React] ${msg}`);
+  console.log(entry);
 };
 
+log("index.tsx module execution started.");
+
 const mountApp = () => {
-  log("Mount sequence started.");
+  log("Attempting to mount React tree...");
   const container = document.getElementById('root');
   if (!container) {
-    log("CRITICAL ERROR: #root container not found in DOM.");
+    log("ERROR: #root element missing.");
     return;
   }
 
   try {
-    log("Creating React root...");
     const root = createRoot(container);
-    log("Rendering App component...");
     root.render(
       <React.StrictMode>
         <App />
       </React.StrictMode>
     );
-    log("App render command issued.");
+    log("Render successful.");
     
-    // Deactivate loading screen once rendering is underway
-    const hideLoader = () => {
-      const loader = document.getElementById('loading-screen');
-      if (loader) {
-        loader.classList.add('hidden');
-        log("Loading screen cleared successfully.");
-      }
-    };
-
-    // Use multiple triggers to ensure the screen is hidden
-    if (document.readyState === 'complete') {
-        hideLoader();
-    } else {
-        window.addEventListener('load', hideLoader);
-        // Fallback for fast renders or if load event already fired
-        setTimeout(hideLoader, 300); 
+    // Hide the loader as soon as React takes over
+    const loader = document.getElementById('loading-screen');
+    if (loader) {
+      loader.classList.add('hidden');
+      log("Interface visible.");
     }
-
   } catch (error: any) {
-    log(`MOUNT FAILED: ${error.message}`);
-    console.error("Mounting error details:", error);
+    log(`MOUNT CRASH: ${error.message}`);
   }
 };
 
-// Execute mounting
-log("index.tsx module loaded. Checking document state...");
+// Mount immediately
 if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', mountApp);
+  document.addEventListener('DOMContentLoaded', mountApp);
 } else {
-    mountApp();
+  mountApp();
 }
