@@ -4,7 +4,7 @@ import App from './App';
 
 const log = (msg: string) => {
   const time = new Date().toLocaleTimeString();
-  const entry = `[${time}] [Module] ${msg}`;
+  const entry = `[${time}] [Kernel] ${msg}`;
   if ((window as any).diagLogs) {
     (window as any).diagLogs.push(entry);
     const el = document.getElementById('diag-content');
@@ -16,13 +16,13 @@ const log = (msg: string) => {
   console.log(entry);
 };
 
-log("index.tsx evaluation phase started.");
+log("index.tsx processing started.");
 
 const mountApp = () => {
-  log("Mount sequence initiated.");
+  log("Mounting UI tree...");
   const container = document.getElementById('root');
   if (!container) {
-    log("ERROR: Mounting point #root not found.");
+    log("FATAL: Root container not found in DOM.");
     return;
   }
 
@@ -33,13 +33,13 @@ const mountApp = () => {
         <App />
       </React.StrictMode>
     );
-    log("React root rendered.");
+    log("React rendering complete.");
     
-    // Hide the loader as soon as React takes over
+    // Deactivate the splash screen once the initial render is queued
     const loader = document.getElementById('loading-screen');
     if (loader) {
       loader.classList.add('hidden');
-      log("Interface is now live.");
+      log("Splash screen dismissed.");
     }
   } catch (error: any) {
     log(`CRITICAL MOUNT FAILURE: ${error.message}`);
@@ -47,7 +47,7 @@ const mountApp = () => {
   }
 };
 
-// Start mounting immediately or on interactive
+// Start mounting process based on document state
 if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', mountApp);
 } else {

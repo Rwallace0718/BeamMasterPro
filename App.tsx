@@ -67,6 +67,7 @@ const App: React.FC = () => {
 
   const handleCalculate = async () => {
     setLoading(true);
+    setResult(null);
     try {
       const calcResult = await calculateLaserSettings(laserConfig, jobSettings);
       const timeMatch = calcResult.estimatedTime.match(/(\d+)m/);
@@ -77,22 +78,27 @@ const App: React.FC = () => {
       
       const enrichedResult = { ...calcResult, totalCost, suggestedPrice: totalCost * 2.5 };
       setResult(enrichedResult);
-      
-      const newProject: Project = {
-        id: generateUUID(),
-        date: new Date().toISOString(),
-        ...jobSettings,
-        laserConfig,
-        results: enrichedResult
-      };
-      const updatedProjects = [newProject, ...projects];
-      setProjects(updatedProjects);
-      localStorage.setItem('beammaster_projects', JSON.stringify(updatedProjects));
     } catch (error: any) {
       alert(error.message || "Failed to calculate settings.");
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleSave = () => {
+    if (!result) return;
+
+    const newProject: Project = {
+      id: generateUUID(),
+      date: new Date().toISOString(),
+      ...jobSettings,
+      laserConfig,
+      results: result
+    };
+
+    const updatedProjects = [newProject, ...projects];
+    setProjects(updatedProjects);
+    localStorage.setItem('beammaster_projects', JSON.stringify(updatedProjects));
   };
 
   const deleteProject = (id: string) => {
@@ -125,7 +131,7 @@ const App: React.FC = () => {
                   <JobPanel settings={jobSettings} onChange={setJobSettings} onCalculate={handleCalculate} loading={loading} />
                 </div>
                 <div className="relative">
-                  <ResultsDisplay result={result} loading={loading} job={jobSettings} />
+                  <ResultsDisplay result={result} loading={loading} job={jobSettings} onSave={handleSave} />
                 </div>
               </div>
             )}
