@@ -16,13 +16,13 @@ const log = (msg: string) => {
   console.log(entry);
 };
 
-log("index.tsx module execution started.");
+log("index.tsx evaluation phase started.");
 
 const mountApp = () => {
-  log("Attempting to mount React tree...");
+  log("Mount sequence initiated.");
   const container = document.getElementById('root');
   if (!container) {
-    log("ERROR: #root element missing.");
+    log("ERROR: Mounting point #root not found.");
     return;
   }
 
@@ -33,20 +33,21 @@ const mountApp = () => {
         <App />
       </React.StrictMode>
     );
-    log("Render successful.");
+    log("React root rendered.");
     
     // Hide the loader as soon as React takes over
     const loader = document.getElementById('loading-screen');
     if (loader) {
       loader.classList.add('hidden');
-      log("Interface visible.");
+      log("Interface is now live.");
     }
   } catch (error: any) {
-    log(`MOUNT CRASH: ${error.message}`);
+    log(`CRITICAL MOUNT FAILURE: ${error.message}`);
+    console.error(error);
   }
 };
 
-// Mount immediately
+// Start mounting immediately or on interactive
 if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', mountApp);
 } else {
