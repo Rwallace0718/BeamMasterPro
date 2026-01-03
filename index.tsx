@@ -16,10 +16,17 @@ const log = (msg: string) => {
   console.log(entry);
 };
 
-log("index.tsx processing started.");
+log("index.tsx module loaded successfully.");
 
 const mountApp = () => {
   log("Mounting UI tree...");
+  
+  // Verify modules are present
+  if (!React) {
+    log("FATAL: React module not found.");
+    return;
+  }
+  
   const container = document.getElementById('root');
   if (!container) {
     log("FATAL: Root container not found in DOM.");
@@ -39,7 +46,7 @@ const mountApp = () => {
     const loader = document.getElementById('loading-screen');
     if (loader) {
       loader.classList.add('hidden');
-      log("Splash screen dismissed.");
+      log("Splash screen dismissed. App is interactive.");
     }
   } catch (error: any) {
     log(`CRITICAL MOUNT FAILURE: ${error.message}`);
@@ -49,7 +56,11 @@ const mountApp = () => {
 
 // Start mounting process based on document state
 if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', mountApp);
+  document.addEventListener('DOMContentLoaded', () => {
+    log("DOMContentLoaded event fired.");
+    mountApp();
+  });
 } else {
+  log("Document already ready. Mounting immediately.");
   mountApp();
 }

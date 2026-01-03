@@ -98,7 +98,7 @@
     </style>
 
     <script>
-        window.diagLogs = ["[" + new Date().toLocaleTimeString() + "] Boot Environment Ready"];
+        window.diagLogs = ["[" + new Date().toLocaleTimeString() + "] System Core Initialized"];
         const log = (msg) => {
             const entry = "[" + new Date().toLocaleTimeString() + "] " + msg;
             window.diagLogs.push(entry);
@@ -110,28 +110,30 @@
             }
         };
 
-        window.onerror = (msg, url, line) => log("UNCAUGHT: " + msg + " (" + url + ":" + line + ")");
-        window.onunhandledrejection = (e) => log("ASYNC ERROR: " + e.reason);
+        window.onerror = (msg, url, line) => log("UNCAUGHT ERROR: " + msg + " (" + url + ":" + line + ")");
+        window.onunhandledrejection = (e) => log("PROMISE REJECTION: " + e.reason);
+
+        document.addEventListener('DOMContentLoaded', () => log("DOM Content Loaded. Waiting for modules..."));
 
         let taps = 0;
         function handleGlobalTap() {
             taps++;
-            log("User activity detected (" + taps + "/5)");
+            log("Activity tick (" + taps + "/5)");
             if (taps >= 5) {
                 document.getElementById('diag-console').style.display = 'block';
-                log("Diagnostic overlay active.");
+                log("Diagnostic overlay enabled.");
             }
         }
 
-        // Timer for the reload button
+        // Timer for the reload button - increased to 15s to allow for cold starts
         setTimeout(() => {
             const btn = document.getElementById('troubleshoot-btn');
             const loader = document.getElementById('loading-screen');
             if (btn && loader && !loader.classList.contains('hidden')) {
                 btn.style.display = 'block';
-                log("NETWORK ADVISORY: Application taking longer than expected to initialize.");
+                log("NETWORK ADVISORY: Module resolution exceeding standard timeout.");
             }
-        }, 10000);
+        }, 15000);
     </script>
 <link rel="stylesheet" href="/index.css">
 </head>
@@ -154,7 +156,7 @@
         </p>
         
         <button id="troubleshoot-btn" class="troubleshoot-btn" onclick="window.location.reload(); event.stopPropagation();">
-            Reset Engine
+            Reload Application
         </button>
     </div>
 
