@@ -3,41 +3,38 @@ import React from 'react';
 import { createRoot } from 'react-dom/client';
 import App from './App';
 
-console.log("index.tsx: Execution started");
+console.log("index.tsx: Bootstrap initiated");
 
-const mountApp = () => {
-  console.log("index.tsx: Attempting to mount...");
+const startApp = () => {
+  console.log("index.tsx: Finding root container...");
   const container = document.getElementById('root');
   
   if (!container) {
-    console.error("index.tsx: Root container not found!");
+    console.error("index.tsx: ERROR - Root container #root not found in DOM");
     return;
   }
 
   try {
+    console.log("index.tsx: Creating React root...");
     const root = createRoot(container);
-    console.log("index.tsx: Root created, rendering App");
+    
+    console.log("index.tsx: Mounting App component...");
     root.render(
       <React.StrictMode>
         <App />
       </React.StrictMode>
     );
-    console.log("index.tsx: Render call complete");
+    console.log("index.tsx: Render sequence finished");
   } catch (err) {
-    console.error("index.tsx: Mounting error:", err);
-    const errorDisplay = document.getElementById('error-display');
-    if (errorDisplay) {
-      errorDisplay.style.display = 'block';
-      errorDisplay.innerHTML = '<strong>Mount Error:</strong> ' + (err instanceof Error ? err.message : String(err));
-    }
+    console.error("index.tsx: CRITICAL MOUNT ERROR", err);
   }
 };
 
-// Handle different load states
-if (document.readyState === 'loading') {
-  console.log("index.tsx: DOM still loading, adding listener");
-  document.addEventListener('DOMContentLoaded', mountApp);
+// Robust execution trigger
+if (document.readyState === 'complete' || document.readyState === 'interactive') {
+  console.log("index.tsx: DOM already ready, starting now");
+  startApp();
 } else {
-  console.log("index.tsx: DOM ready, mounting immediately");
-  mountApp();
+  console.log("index.tsx: Waiting for DOMContentLoaded event...");
+  document.addEventListener('DOMContentLoaded', startApp);
 }
