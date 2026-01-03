@@ -3,8 +3,9 @@ import { createRoot } from 'react-dom/client';
 import App from './App';
 
 const log = (msg: string) => {
+  const time = new Date().toLocaleTimeString();
   if ((window as any).diagLogs) {
-    (window as any).diagLogs.push(`[${new Date().toLocaleTimeString()}] [React] ${msg}`);
+    (window as any).diagLogs.push(`[${time}] [React] ${msg}`);
     const el = document.getElementById('diag-content');
     if (el) {
       el.innerText = (window as any).diagLogs.join('\n');
@@ -15,28 +16,30 @@ const log = (msg: string) => {
 };
 
 const mountApp = () => {
-  log("Initializing React application...");
+  log("Mount sequence started.");
   const container = document.getElementById('root');
   if (!container) {
-    log("CRITICAL: DOM Root (#root) missing.");
+    log("CRITICAL ERROR: #root container not found in DOM.");
     return;
   }
 
   try {
+    log("Creating React root...");
     const root = createRoot(container);
+    log("Rendering App component...");
     root.render(
       <React.StrictMode>
         <App />
       </React.StrictMode>
     );
-    log("Mounting complete.");
+    log("App render command issued.");
     
-    // Deactivate loading screen
+    // Deactivate loading screen once rendering is underway
     const hideLoader = () => {
       const loader = document.getElementById('loading-screen');
       if (loader) {
         loader.classList.add('hidden');
-        log("Loading screen cleared.");
+        log("Loading screen cleared successfully.");
       }
     };
 
@@ -45,16 +48,18 @@ const mountApp = () => {
         hideLoader();
     } else {
         window.addEventListener('load', hideLoader);
-        setTimeout(hideLoader, 500); // Fallback for fast renders
+        // Fallback for fast renders or if load event already fired
+        setTimeout(hideLoader, 300); 
     }
 
   } catch (error: any) {
-    log(`FATAL: React mount failed: ${error.message}`);
-    console.error("Mounting error:", error);
+    log(`MOUNT FAILED: ${error.message}`);
+    console.error("Mounting error details:", error);
   }
 };
 
-// Start mounting immediately or on interactive
+// Execute mounting
+log("index.tsx module loaded. Checking document state...");
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', mountApp);
 } else {
